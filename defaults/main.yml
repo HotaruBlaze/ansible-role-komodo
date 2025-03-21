@@ -1,5 +1,7 @@
 komodo_version: "v1.16.12"
-komodo_bin: "periphery-x86_64"
+komodo_bin_x86_64: ""
+komodo_bin_aarch64: ""
+komodo_git_repo: "moghtech/komodo"
 
 # You should encrypt with `ansible-vault encrypt_string 'supersecretpasskey' --name 'passkey'` 
 # If encrypting, you must run with --ask-vault-pass or have a vault password file.

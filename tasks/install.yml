@@ -45,13 +45,32 @@
   become: yes
   become_user: "{{ komodo_user }}"
 
-- name: Download Komodo Periphery Agent
+- name: Get release info from GitHub
+  uri:
+    url: "https://api.github.com/repos/{{ komodo_git_repo }}/releases/tags/{{ komodo_version }}"
+    method: GET
+    return_content: yes
+  register: github_release_info
+
+- name: Set correct download URL for architecture
+  set_fact:
+    komodo_bin_url: "{{ item.browser_download_url }}"
+  with_items: "{{ github_release_info.json.assets }}"
+  when: item.name is search(komodo_bin_override | default('periphery-' + ansible_architecture | default('periphery')))
+
+- name: Fail if no matching binary is found
+  fail:
+    msg: "No matching binary found for architecture {{ ansible_architecture }} in version {{ komodo_version }}"
+  when: komodo_bin_url is not defined
+
+- name: Download Komodo {{ komodo_version }} Periphery Agent
   get_url:
-    url: "https://github.com/moghtech/komodo/releases/download/{{ komodo_version }}/{{ komodo_bin }}"
+    url: "{{ komodo_bin_url }}"
     dest: "{{ komodo_bin_path }}"
     mode: "0755"
     owner: "{{ komodo_user }}"
     group: "{{ komodo_group }}"
+    force: yes
 
 - name: Deploy configuration file
   template:
